@@ -1,0 +1,998 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Devam Defteri — Araştırma Görevlileri Giriş–Çıkış Sistemi</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jsQR/1.4.0/jsQR.js"></script>
+<style>
+:root{
+  --ink:#16233D; --ink-soft:#5B6472; --slate:#3A5A8C;
+  --brass:#B8892B; --brass-deep:#8F6A1E;
+  --paper:#EDF0F2; --card:#FFFFFF; --line:#DBE0E5;
+  --success:#2F7B5A; --success-bg:#E7F3EC;
+  --warning:#B8722B; --warning-bg:#FBEEE0;
+  --danger:#B23A2E; --danger-bg:#FBEAE8;
+  --radius:10px;
+}
+*{box-sizing:border-box;}
+html,body{margin:0;padding:0;}
+body{font-family:'Inter',sans-serif;background:var(--paper);color:var(--ink);min-height:100vh;-webkit-font-smoothing:antialiased;}
+.mono{font-family:'JetBrains Mono',monospace;}
+.serif{font-family:'Fraunces',serif;}
+#app{display:flex;min-height:100vh;}
+#sidebar{width:230px;flex:0 0 230px;background:var(--ink);color:#EDEFF3;display:flex;flex-direction:column;padding:22px 16px;position:sticky;top:0;height:100vh;}
+.brand{padding:0 6px 22px 6px;border-bottom:1px solid rgba(255,255,255,0.12);margin-bottom:18px;}
+.brand .eyebrow{font-family:'JetBrains Mono',monospace;font-size:10.5px;letter-spacing:.14em;color:var(--brass);text-transform:uppercase;}
+.brand h1{font-family:'Fraunces',serif;font-size:20px;font-weight:600;margin:4px 0 2px 0;line-height:1.2;}
+.brand .sub{font-size:11.5px;color:#A9B1C0;}
+nav{display:flex;flex-direction:column;gap:2px;flex:1;}
+.navbtn{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:8px;border:none;background:transparent;color:#C7CCD8;font-size:13.5px;font-weight:500;cursor:pointer;text-align:left;font-family:inherit;transition:background .15s, color .15s;}
+.navbtn:hover{background:rgba(255,255,255,0.06);color:#fff;}
+.navbtn.active{background:rgba(184,137,43,0.16);color:#F0D9A6;}
+.navbtn .dot{width:6px;height:6px;border-radius:50%;background:currentColor;opacity:.55;flex:0 0 auto;}
+.navbtn .lock{margin-left:auto;font-size:10px;opacity:.6;}
+.sidebar-foot{border-top:1px solid rgba(255,255,255,0.12);padding-top:14px;margin-top:10px;}
+.clock{font-family:'JetBrains Mono',monospace;font-size:20px;color:#fff;letter-spacing:.02em;}
+.clock-date{font-size:11px;color:#A9B1C0;margin-top:2px;}
+.kiosk-launch{margin-top:14px;width:100%;padding:9px;border-radius:8px;border:1px solid rgba(255,255,255,0.18);background:transparent;color:#EDEFF3;font-size:12px;cursor:pointer;font-family:inherit;}
+.kiosk-launch:hover{background:rgba(255,255,255,0.08);}
+.store-pill{margin-top:10px;font-size:10px;padding:5px 8px;border-radius:6px;background:rgba(255,255,255,0.06);color:#A9B1C0;line-height:1.4;}
+.store-pill.warn{color:#F0C08A;background:rgba(184,137,43,0.14);}
+.store-pill.ok{color:#9FD6B7;background:rgba(47,123,90,0.16);}
+
+#main{flex:1;min-width:0;padding:30px 38px 60px 38px;}
+.page-head{margin-bottom:26px;}
+.page-head .eyebrow{font-family:'JetBrains Mono',monospace;font-size:10.5px;letter-spacing:.14em;color:var(--brass-deep);text-transform:uppercase;}
+.page-head h2{font-family:'Fraunces',serif;font-size:28px;font-weight:600;margin:4px 0 6px 0;}
+.page-head p{color:var(--ink-soft);font-size:13.5px;max-width:640px;line-height:1.5;margin:0;}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:22px;}
+.grid{display:grid;gap:18px;}
+.grid.cols-3{grid-template-columns:repeat(3,1fr);}
+.grid.cols-2{grid-template-columns:1.3fr 1fr;}
+@media (max-width:980px){.grid.cols-3{grid-template-columns:1fr;}.grid.cols-2{grid-template-columns:1fr;}}
+.hero-stat{background:linear-gradient(135deg,var(--ink) 0%,#213254 100%);color:#fff;border-radius:var(--radius);padding:26px 28px;display:flex;align-items:flex-end;justify-content:space-between;gap:20px;flex-wrap:wrap;}
+.hero-stat .num{font-family:'Fraunces',serif;font-size:56px;font-weight:600;line-height:1;}
+.hero-stat .label{font-size:12.5px;color:#B9C1D1;margin-top:6px;}
+.hero-stat .sub-stats{display:flex;gap:26px;}
+.hero-stat .sub-stats div{text-align:right;}
+.hero-stat .sub-stats .n{font-family:'JetBrains Mono',monospace;font-size:20px;color:var(--brass);}
+.hero-stat .sub-stats .l{font-size:10.5px;color:#A9B1C0;text-transform:uppercase;letter-spacing:.06em;}
+.ledger-row{display:flex;align-items:center;gap:12px;padding:11px 4px;border-bottom:1px solid var(--line);font-size:13.5px;}
+.ledger-row:last-child{border-bottom:none;}
+.pulse-dot{width:8px;height:8px;border-radius:50%;background:var(--success);box-shadow:0 0 0 3px var(--success-bg);flex:0 0 auto;}
+.badge{display:inline-flex;align-items:center;padding:2px 9px;border-radius:100px;font-size:11px;font-weight:600;font-family:'JetBrains Mono',monospace;}
+.badge.in{background:var(--success-bg);color:var(--success);}
+.badge.out{background:#EEF0F2;color:var(--ink-soft);}
+.badge.late{background:var(--warning-bg);color:var(--warning);}
+.badge.early{background:var(--danger-bg);color:var(--danger);}
+.badge.ontime{background:var(--success-bg);color:var(--success);}
+.badge.net-ok{background:var(--success-bg);color:var(--success);}
+.badge.net-bad{background:var(--danger-bg);color:var(--danger);}
+.badge.net-unk{background:#EEF0F2;color:var(--ink-soft);}
+.section-title{font-family:'Fraunces',serif;font-size:16px;font-weight:600;margin:0 0 4px 0;}
+.section-desc{font-size:12px;color:var(--ink-soft);margin:0 0 14px 0;}
+.empty-note{color:var(--ink-soft);font-size:12.5px;padding:16px 4px;text-align:center;}
+table{width:100%;border-collapse:collapse;font-size:13px;}
+th{text-align:left;font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-soft);padding:8px 10px;border-bottom:1px solid var(--line);font-weight:600;}
+td{padding:10px;border-bottom:1px solid var(--line);}
+tr:last-child td{border-bottom:none;}
+button{cursor:pointer;font-family:inherit;}
+.btn{padding:9px 16px;border-radius:8px;border:1px solid var(--line);background:#fff;color:var(--ink);font-size:13px;font-weight:600;}
+.btn:hover{border-color:var(--slate);color:var(--slate);}
+.btn.primary{background:var(--ink);color:#fff;border-color:var(--ink);}
+.btn.primary:hover{background:var(--slate);border-color:var(--slate);color:#fff;}
+.btn.brass{background:var(--brass);color:#fff;border-color:var(--brass);}
+.btn.brass:hover{background:var(--brass-deep);border-color:var(--brass-deep);}
+.btn.danger{background:#fff;color:var(--danger);border-color:#E8C7C3;}
+.btn.danger:hover{background:var(--danger-bg);}
+.btn.sm{padding:5px 10px;font-size:11.5px;}
+.btn:disabled{opacity:.5;cursor:not-allowed;}
+input[type=text],input[type=time],input[type=number],select,textarea{width:100%;padding:9px 11px;border:1px solid var(--line);border-radius:8px;font-family:inherit;font-size:13.5px;color:var(--ink);background:#fff;}
+textarea{resize:vertical;min-height:56px;}
+input:focus,select:focus,textarea:focus{outline:2px solid var(--slate);outline-offset:1px;}
+label{display:block;font-size:11.5px;font-weight:600;color:var(--ink-soft);margin-bottom:5px;text-transform:uppercase;letter-spacing:.04em;}
+.field{margin-bottom:14px;}
+.field-row{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+.toggle-row{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--line);}
+.toggle-row:last-child{border-bottom:none;}
+.toggle-row .tt{font-size:13px;font-weight:600;}
+.toggle-row .td{font-size:11.5px;color:var(--ink-soft);margin-top:2px;}
+.switch{position:relative;width:42px;height:24px;flex:0 0 auto;}
+.switch input{opacity:0;width:0;height:0;}
+.switch .slider{position:absolute;inset:0;background:#D8DCE1;border-radius:100px;transition:.15s;cursor:pointer;}
+.switch .slider:before{content:'';position:absolute;width:18px;height:18px;left:3px;top:3px;background:#fff;border-radius:50%;transition:.15s;}
+.switch input:checked + .slider{background:var(--brass);}
+.switch input:checked + .slider:before{transform:translateX(18px);}
+.subcard{border:1px solid var(--line);border-radius:8px;padding:16px;margin-top:14px;background:#FAFBFC;}
+.hint{font-size:11.5px;color:var(--ink-soft);line-height:1.5;margin:6px 0 0 0;}
+
+#kiosk-view.fullscreen-mode{position:fixed;inset:0;background:var(--ink);z-index:500;display:flex;align-items:center;justify-content:center;flex-direction:column;padding:24px;overflow:auto;}
+.kiosk-wrap{max-width:520px;width:100%;text-align:center;}
+.kiosk-wrap.fs{color:#fff;}
+.scan-frame{position:relative;width:280px;height:280px;margin:0 auto 16px auto;border-radius:20px;overflow:hidden;background:#0C1526;border:2px solid var(--brass);}
+.scan-frame video{width:100%;height:100%;object-fit:cover;}
+.scan-frame .corner{position:absolute;width:26px;height:26px;border-color:var(--brass);}
+.scan-frame .tl{top:8px;left:8px;border-top:3px solid;border-left:3px solid;border-radius:6px 0 0 0;}
+.scan-frame .tr{top:8px;right:8px;border-top:3px solid;border-right:3px solid;border-radius:0 6px 0 0;}
+.scan-frame .bl{bottom:8px;left:8px;border-bottom:3px solid;border-left:3px solid;border-radius:0 0 0 6px;}
+.scan-frame .br{bottom:8px;right:8px;border-bottom:3px solid;border-right:3px solid;border-radius:0 0 6px 0;}
+.scan-line{position:absolute;left:6%;right:6%;height:2px;background:var(--brass);box-shadow:0 0 8px var(--brass);animation:scan 2.2s ease-in-out infinite;}
+@keyframes scan{0%{top:8%;}50%{top:90%;}100%{top:8%;}}
+.cam-off-msg{position:absolute;inset:0;color:#B9C1D1;font-size:12.5px;padding:24px;align-items:center;justify-content:center;text-align:center;background:#0C1526;}
+.stamp{display:inline-block;border:3px solid var(--success);color:var(--success);font-family:'Fraunces',serif;font-weight:700;font-size:22px;padding:10px 26px;border-radius:10px;transform:rotate(-6deg);letter-spacing:.04em;animation:stampIn .35s cubic-bezier(.2,1.4,.4,1);}
+.stamp.out{border-color:var(--ink-soft);color:var(--ink-soft);}
+.stamp.late{border-color:var(--warning);color:var(--warning);}
+.stamp.reject{border-color:var(--danger);color:var(--danger);font-size:16px;padding:10px 18px;}
+@keyframes stampIn{0%{transform:scale(2.4) rotate(-6deg);opacity:0;}100%{transform:scale(1) rotate(-6deg);opacity:1;}}
+.net-status{display:flex;justify-content:center;gap:8px;margin-bottom:14px;flex-wrap:wrap;}
+.manual-search{margin-top:20px;text-align:left;}
+.person-pick{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 12px;border:1px solid var(--line);border-radius:8px;margin-bottom:7px;background:#fff;}
+.kiosk-wrap.fs .person-pick{background:rgba(255,255,255,0.06);border-color:rgba(255,255,255,0.16);color:#fff;}
+.kiosk-wrap.fs input[type=text]{background:rgba(255,255,255,0.08);border-color:rgba(255,255,255,0.2);color:#fff;}
+.kiosk-wrap.fs .empty-note{color:#A9B1C0;}
+.avatar{width:34px;height:34px;border-radius:50%;background:var(--slate);color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;flex:0 0 auto;font-family:'Fraunces',serif;}
+.exit-fs{margin-top:22px;background:none;border:none;color:#6C7A93;font-size:11.5px;text-decoration:underline;}
+
+.overlay{position:fixed;inset:0;background:rgba(22,35,61,0.55);z-index:600;display:flex;align-items:center;justify-content:center;padding:20px;}
+.modal{background:#fff;border-radius:14px;padding:28px;max-width:340px;width:100%;text-align:center;}
+.modal h3{font-family:'Fraunces',serif;margin:0 0 4px 0;font-size:19px;}
+.modal .code{font-family:'JetBrains Mono',monospace;color:var(--ink-soft);font-size:12.5px;margin-bottom:10px;}
+#qr-holder{display:flex;justify-content:center;margin-bottom:10px;}
+.qr-countdown{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--brass-deep);margin-bottom:14px;}
+
+.toast{position:fixed;bottom:22px;right:22px;background:var(--ink);color:#fff;padding:12px 18px;border-radius:8px;font-size:13px;z-index:700;box-shadow:0 8px 24px rgba(0,0,0,0.2);animation:toastIn .2s ease;max-width:320px;}
+@keyframes toastIn{from{transform:translateY(8px);opacity:0;}to{transform:translateY(0);opacity:1;}}
+.shared-note{display:flex;align-items:center;gap:8px;background:var(--warning-bg);color:var(--warning);border:1px solid #EAD5B0;padding:9px 13px;border-radius:8px;font-size:12px;margin-bottom:18px;}
+.shared-note.danger{background:var(--danger-bg);color:var(--danger);border-color:#E8C7C3;}
+.toolbar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:16px;}
+.toolbar > *{flex:0 0 auto;}
+.toolbar .grow{flex:1 1 auto;min-width:160px;}
+::placeholder{color:#9AA2AF;}
+.loading{padding:40px;text-align:center;color:var(--ink-soft);font-size:13px;}
+</style>
+</head>
+<body>
+<div id="app">
+  <aside id="sidebar">
+    <div class="brand">
+      <div class="eyebrow">Mühendislik Fakültesi</div>
+      <h1>Devam Defteri</h1>
+      <div class="sub">Araştırma Görevlileri Giriş–Çıkış Sistemi</div>
+    </div>
+    <nav id="nav">
+      <button class="navbtn" data-view="kiosk"><span class="dot"></span>Giriş–Çıkış Terminali</button>
+      <button class="navbtn" data-view="panel"><span class="dot"></span>Yönetim Paneli</button>
+      <button class="navbtn" data-view="personel"><span class="dot"></span>Personel<span class="lock">🔒</span></button>
+      <button class="navbtn" data-view="raporlar"><span class="dot"></span>Raporlar</button>
+      <button class="navbtn" data-view="ayarlar"><span class="dot"></span>Ayarlar<span class="lock">🔒</span></button>
+    </nav>
+    <div class="sidebar-foot">
+      <div class="clock" id="clock">--:--:--</div>
+      <div class="clock-date" id="clock-date">—</div>
+      <button class="kiosk-launch" id="launch-kiosk">Tam Ekran Terminal Aç ↗</button>
+      <div class="store-pill" id="store-pill">Depolama kontrol ediliyor…</div>
+    </div>
+  </aside>
+  <main id="main">
+    <div id="view-root"><div class="loading">Yükleniyor…</div></div>
+  </main>
+</div>
+
+<script>
+/* =================================================================
+   FIREBASE YAPILANDIRMASI (opsiyonel)
+   GitHub Pages / OSTIM LMS / fakülte sunucusunda YAYINLARKEN, çoklu
+   cihaz (terminal + yönetici + telefonlar) arasında verinin GERÇEK
+   ZAMANLI ve PAYLAŞIMLI olması için buraya ücretsiz bir Firebase
+   Realtime Database proje bilgisi girin. Boş bırakılırsa uygulama
+   Ayarlar sekmesinden girilen bilgiyi (varsa) ya da bu tarayıcıya
+   özel yerel depolamayı (localStorage) kullanır.
+   Örnek:
+   const FIREBASE_CONFIG = {
+     apiKey:"AIza...", authDomain:"proje.firebaseapp.com",
+     databaseURL:"https://proje-default-rtdb.firebaseio.com",
+     projectId:"proje"
+   };
+================================================================= */
+const FIREBASE_CONFIG = null;
+const QR_STEP = 30; // dinamik QR kaç saniyede bir yenilensin
+
+/* Bazı ortamlarda (örn. Claude.ai artifact önizlemesi) localStorage/sessionStorage
+   erişimi engellenmiş olabilir ve doğrudan erişim script'i tamamen çökertebilir.
+   Bu sarmalayıcı, erişim mümkün değilse sessizce bellek-içi bir yedeğe düşer;
+   gerçek bir sunucuda (GitHub Pages / OSTIM LMS / fakülte sunucusu) normal
+   localStorage/sessionStorage gibi kalıcı çalışmaya devam eder. */
+const safeLocal = {
+  mem: {},
+  get(key){ try{ return localStorage.getItem(key); }catch(e){ return Object.prototype.hasOwnProperty.call(this.mem,key) ? this.mem[key] : null; } },
+  set(key, val){ try{ localStorage.setItem(key, val); }catch(e){ this.mem[key] = val; } }
+};
+const safeSession = {
+  mem: {},
+  get(key){ try{ return sessionStorage.getItem(key); }catch(e){ return Object.prototype.hasOwnProperty.call(this.mem,key) ? this.mem[key] : null; } },
+  set(key, val){ try{ sessionStorage.setItem(key, val); }catch(e){ this.mem[key] = val; } }
+};
+
+/* ---------------------------------------------------------------
+   DEPOLAMA KATMANI — 3 kademeli otomatik geçiş:
+   1) Firebase Realtime Database (varsa)  -> gerçek çoklu cihaz senkronu
+   2) Claude window.storage (Claude içi önizleme sırasında)
+   3) localStorage (tek tarayıcıya özel, yedek/demo modu)
+--------------------------------------------------------------- */
+const STORE_KEY = { personnel:'agdev-personnel', settings:'agdev-settings', records:'agdev-records' };
+
+const AppStorage = {
+  mode: 'local', fbDb: null,
+  async init(){
+    const cfg = FIREBASE_CONFIG || (()=>{ try{ return JSON.parse(safeLocal.get('agdev-fb-config')||'null'); }catch(e){ return null; } })();
+    if(cfg && cfg.apiKey && cfg.databaseURL){
+      try{
+        await this._loadSdk();
+        const app = firebase.initializeApp(cfg);
+        this.fbDb = firebase.database(app);
+        this.mode = 'firebase';
+        return;
+      }catch(e){ console.error('Firebase bağlantısı kurulamadı, yedek depolamaya geçiliyor.', e); }
+    }
+    if(window.storage){ this.mode = 'claude'; return; }
+    this.mode = 'local';
+  },
+  _loadSdk(){
+    if(window.firebase) return Promise.resolve();
+    const load = (src)=>new Promise((res,rej)=>{ const s=document.createElement('script'); s.src=src; s.onload=res; s.onerror=rej; document.head.appendChild(s); });
+    return load('https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js')
+      .then(()=>load('https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js'));
+  },
+  async get(key, fallback){
+    if(this.mode==='firebase'){
+      try{ const snap = await this.fbDb.ref('agdev/'+key).once('value'); return snap.exists()? snap.val() : fallback; }
+      catch(e){ console.error(e); return fallback; }
+    }
+    if(this.mode==='claude'){
+      try{ const r = await window.storage.get(key, true); return (r && r.value) ? JSON.parse(r.value) : fallback; }
+      catch(e){ return fallback; }
+    }
+    try{ const v = safeLocal.get('agdev-local-'+key); return v ? JSON.parse(v) : fallback; }catch(e){ return fallback; }
+  },
+  async set(key, value){
+    if(this.mode==='firebase'){
+      try{ await this.fbDb.ref('agdev/'+key).set(value); return true; }catch(e){ console.error(e); return false; }
+    }
+    if(this.mode==='claude'){
+      try{ await window.storage.set(key, JSON.stringify(value), true); return true; }catch(e){ return false; }
+    }
+    try{ safeLocal.set('agdev-local-'+key, JSON.stringify(value)); return true; }catch(e){ return false; }
+  }
+};
+
+let state = {
+  personnel: [], records: [],
+  settings: {
+    fakulteAdi:'Mühendislik Fakültesi', mesaiBaslangic:'08:30', toleransGiris:15, mesaiBitis:'17:30', toleransCikis:15,
+    adminPin:'1234',
+    agDogrulamaZorunlu:false, izinliIpOnekleri:'',
+    konumDogrulamaZorunlu:false, fakulteLat:'', fakulteLng:'', konumToleransMetre:200,
+    bildirimlerAktif:false
+  },
+  view:'kiosk', ready:false
+};
+
+async function loadAll(){
+  state.personnel = await AppStorage.get(STORE_KEY.personnel, []);
+  state.settings  = Object.assign({}, state.settings, await AppStorage.get(STORE_KEY.settings, {}));
+  state.records   = await AppStorage.get(STORE_KEY.records, []);
+  let migrated = false;
+  state.personnel.forEach(p=>{ if(!p.secret){ p.secret = uid()+uid(); migrated = true; } });
+  if(migrated) await persistPersonnel();
+  state.ready = true;
+}
+async function persistPersonnel(){ await AppStorage.set(STORE_KEY.personnel, state.personnel); }
+async function persistSettings(){ await AppStorage.set(STORE_KEY.settings, state.settings); }
+async function persistRecords(){ await AppStorage.set(STORE_KEY.records, state.records); }
+
+function updateStorePill(){
+  const el = document.getElementById('store-pill');
+  if(!el) return;
+  if(AppStorage.mode==='firebase'){ el.textContent='☁ Firebase — çoklu cihaz senkron aktif'; el.className='store-pill ok'; }
+  else if(AppStorage.mode==='claude'){ el.textContent='◉ Claude önizleme deposu (paylaşımlı)'; el.className='store-pill ok'; }
+  else{ el.textContent='⚠ Yerel depolama — sadece bu tarayıcı. Senkron için Ayarlar → Bağlantı.'; el.className='store-pill warn'; }
+}
+
+/* ---------------------------------------------------------------
+   YARDIMCI FONKSİYONLAR
+--------------------------------------------------------------- */
+function uid(){ return Date.now().toString(36) + Math.random().toString(36).slice(2,8); }
+function genCode(){
+  const chars = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789';
+  const existing = new Set(state.personnel.map(p=>p.kod));
+  let code;
+  do{ code=''; for(let i=0;i<6;i++) code += chars[Math.floor(Math.random()*chars.length)]; }while(existing.has(code));
+  return code;
+}
+function pad(n){ return n.toString().padStart(2,'0'); }
+function localDateStr(d){ return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate()); }
+function timeStr(d){ return pad(d.getHours())+':'+pad(d.getMinutes()); }
+function timeStrSec(d){ return pad(d.getHours())+':'+pad(d.getMinutes())+':'+pad(d.getSeconds()); }
+function fmtDateTR(dateStr){
+  const [y,m,d] = dateStr.split('-');
+  const gunler = ['Paz','Pzt','Sal','Çar','Per','Cum','Cmt'];
+  const dt = new Date(dateStr+'T00:00:00');
+  return `${d}.${m}.${y} (${gunler[dt.getDay()]})`;
+}
+function minutesBetween(a,b){ return Math.round((b-a)/60000); }
+function durationStr(mins){ if(mins<0) mins=0; const h=Math.floor(mins/60), m=mins%60; return h+'sa '+pad(m)+'dk'; }
+function initials(name){ return name.split(' ').filter(Boolean).slice(0,2).map(w=>w[0]).join('').toUpperCase(); }
+function personById(id){ return state.personnel.find(p=>p.id===id); }
+function personByCode(code){ return state.personnel.find(p=>p.kod===code); }
+function todayRecordsFor(personId, dateStr){ return state.records.filter(r=>r.personnelId===personId && r.dateStr===dateStr).sort((a,b)=>a.ts.localeCompare(b.ts)); }
+function lastRecordFor(personId){ const recs = state.records.filter(r=>r.personnelId===personId).sort((a,b)=>a.ts.localeCompare(b.ts)); return recs.length ? recs[recs.length-1] : null; }
+function isPresent(personId){ const last = lastRecordFor(personId); return !!(last && last.type==='giris'); }
+function toleransEsigiGiris(){ const [h,m]=state.settings.mesaiBaslangic.split(':').map(Number); return h*60+m+Number(state.settings.toleransGiris); }
+function toleransEsigiCikis(){ const [h,m]=state.settings.mesaiBitis.split(':').map(Number); return h*60+m-Number(state.settings.toleransCikis); }
+function mesaiBitisEsigi(){ const [h,m]=state.settings.mesaiBitis.split(':').map(Number); return h*60+m+Number(state.settings.toleransCikis); }
+function tsMinutesOfDay(ts){ const d=new Date(ts); return d.getHours()*60+d.getMinutes(); }
+
+async function addRecordForPerson(personId){
+  const now = new Date();
+  const present = isPresent(personId);
+  const type = present ? 'cikis' : 'giris';
+  const rec = { id: uid(), personnelId: personId, type, ts: now.toISOString(), dateStr: localDateStr(now) };
+  state.records.push(rec);
+  await persistRecords();
+  return rec;
+}
+async function deleteRecord(recId){ state.records = state.records.filter(r=>r.id!==recId); await persistRecords(); }
+
+/* ---------------- DİNAMİK QR (TOTP benzeri, sunucusuz) ---------------- */
+async function hmacSha256(keyStr, msgStr){
+  const enc = new TextEncoder();
+  const key = await crypto.subtle.importKey('raw', enc.encode(keyStr), {name:'HMAC', hash:'SHA-256'}, false, ['sign']);
+  const sig = await crypto.subtle.sign('HMAC', key, enc.encode(msgStr));
+  return new Uint8Array(sig);
+}
+async function totpToken(secret, stepSeconds, offset){
+  offset = offset || 0;
+  const win = Math.floor(Date.now()/1000/stepSeconds) + offset;
+  const bytes = await hmacSha256(secret, String(win));
+  const o = bytes[bytes.length-1] & 0xf;
+  const code = ((bytes[o]&0x7f)<<24 | (bytes[o+1]&0xff)<<16 | (bytes[o+2]&0xff)<<8 | (bytes[o+3]&0xff)) % 1000000;
+  return code.toString().padStart(6,'0');
+}
+async function verifyToken(person, token){
+  for(const off of [0,-1,1]){
+    const t = await totpToken(person.secret, QR_STEP, off);
+    if(t===token){
+      const winNum = Math.floor(Date.now()/1000/QR_STEP) + off;
+      if(person.lastUsedWindow===winNum && person.lastUsedToken===token) return false; // aynı kare tekrar kullanılamaz
+      person.lastUsedWindow = winNum; person.lastUsedToken = token;
+      await persistPersonnel();
+      return true;
+    }
+  }
+  return false;
+}
+
+/* ---------------- AĞ / KONUM DOĞRULAMA (istemci tarafı, yaklaşık) ---------------- */
+async function getPublicIp(){
+  try{ const res = await fetch('https://api.ipify.org?format=json'); const d = await res.json(); return d.ip; }
+  catch(e){ return null; }
+}
+function getPosition(){
+  return new Promise((resolve,reject)=>{
+    if(!navigator.geolocation){ reject(new Error('no-geo')); return; }
+    navigator.geolocation.getCurrentPosition(resolve, reject, { timeout:8000, maximumAge:20000 });
+  });
+}
+function haversine(lat1,lon1,lat2,lon2){
+  const R=6371000, toRad=x=>x*Math.PI/180;
+  const dLat=toRad(lat2-lat1), dLon=toRad(lon2-lon1);
+  const a=Math.sin(dLat/2)**2 + Math.cos(toRad(lat1))*Math.cos(toRad(lat2))*Math.sin(dLon/2)**2;
+  return R*2*Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+}
+async function evaluateNetwork(){
+  const s = state.settings;
+  let ok = true, reason = '', ip = null;
+  if(s.agDogrulamaZorunlu){
+    ip = await getPublicIp();
+    const prefixes = (s.izinliIpOnekleri||'').split(',').map(x=>x.trim()).filter(Boolean);
+    if(!ip){ ok=false; reason='IP adresi tespit edilemedi'; }
+    else if(prefixes.length && !prefixes.some(p=>ip.startsWith(p))){ ok=false; reason='Kampüs ağı dışında görünüyor ('+ip+')'; }
+  }
+  if(ok && s.konumDogrulamaZorunlu){
+    try{
+      const pos = await getPosition();
+      const d = haversine(pos.coords.latitude, pos.coords.longitude, Number(s.fakulteLat), Number(s.fakulteLng));
+      if(d > Number(s.konumToleransMetre||200)){ ok=false; reason='Konum fakülteden uzak (~'+Math.round(d)+' m)'; }
+    }catch(e){ ok=false; reason='Konum bilgisi alınamadı'; }
+  }
+  return { checked: (s.agDogrulamaZorunlu||s.konumDogrulamaZorunlu), ok, reason, ip };
+}
+async function canCheckIn(){
+  if(adminUnlocked) return { checked:false, ok:true, reason:'' }; // fiziksel olarak yönetici PIN'i açan kişi (resepsiyon/tablet) doğrulamayı geçebilir
+  return await evaluateNetwork();
+}
+
+/* ---------------- TARAYICI BİLDİRİMLERİ (uygulama açıkken çalışır) ---------------- */
+function notifyOnce(key, title, body){
+  const today = localDateStr(new Date());
+  const storeKey = 'agdev-notified-'+today;
+  let sent = [];
+  try{ sent = JSON.parse(safeLocal.get(storeKey)||'[]'); }catch(e){}
+  if(sent.includes(key)) return;
+  if(state.settings.bildirimlerAktif && typeof Notification!=='undefined' && Notification.permission==='granted'){
+    try{ new Notification(title, { body }); }catch(e){}
+  }
+  sent.push(key);
+  try{ safeLocal.set(storeKey, JSON.stringify(sent)); }catch(e){}
+}
+function checkReminders(){
+  if(!state.ready || !state.settings.bildirimlerAktif) return;
+  const now = new Date(); const todayStr = localDateStr(now); const nowMin = now.getHours()*60+now.getMinutes();
+  if(nowMin >= toleransEsigiGiris()){
+    const eksik = state.personnel.filter(p=> !todayRecordsFor(p.id, todayStr).some(r=>r.type==='giris'));
+    if(eksik.length) notifyOnce('gec-'+todayStr, 'Giriş yapmayan personel', eksik.map(p=>p.name).join(', ')+' henüz giriş yapmadı.');
+  }
+  if(nowMin >= mesaiBitisEsigi()){
+    const icerde = state.personnel.filter(p=>isPresent(p.id));
+    if(icerde.length) notifyOnce('cikis-'+todayStr, 'Hâlâ fakültede olanlar', icerde.map(p=>p.name).join(', ')+' mesai bitmesine rağmen çıkış yapmadı.');
+  }
+}
+setInterval(checkReminders, 60000);
+
+/* ---------------- YÖNETİCİ PIN KİLİDİ (temel koruma, gerçek kimlik doğrulama değildir) ---------------- */
+let adminUnlocked = safeSession.get('agdev-admin-unlocked')==='1';
+function requireAdmin(cb){
+  if(adminUnlocked){ cb(); return; }
+  const pin = prompt('Yönetici PIN kodunu girin:');
+  if(pin===null) return;
+  if(pin === (state.settings.adminPin || '1234')){
+    adminUnlocked = true; safeSession.set('agdev-admin-unlocked','1'); cb();
+  }else{ showToast('Hatalı PIN.'); }
+}
+
+/* ---------------------------------------------------------------
+   GÖRÜNÜM YÖNETİMİ
+--------------------------------------------------------------- */
+const root = document.getElementById('view-root');
+let toastTimer = null, kioskFullscreen = false;
+let kioskNetInterval = null;
+
+function setView(v){
+  state.view = v;
+  document.querySelectorAll('.navbtn').forEach(b=>b.classList.toggle('active', b.dataset.view===v));
+  render();
+}
+document.getElementById('nav').addEventListener('click', (e)=>{
+  const btn = e.target.closest('.navbtn'); if(!btn) return;
+  const v = btn.dataset.view;
+  if((v==='personel'||v==='ayarlar')){ requireAdmin(()=>setView(v)); }
+  else setView(v);
+});
+document.getElementById('launch-kiosk').addEventListener('click', ()=>{ setView('kiosk'); kioskFullscreen=true; render(); });
+
+function showToast(msg){
+  const existing = document.querySelector('.toast'); if(existing) existing.remove();
+  const t = document.createElement('div'); t.className='toast'; t.textContent=msg;
+  document.body.appendChild(t);
+  clearTimeout(toastTimer); toastTimer = setTimeout(()=>t.remove(), 2800);
+}
+
+function render(){
+  if(!state.ready){ root.innerHTML = '<div class="loading">Yükleniyor…</div>'; return; }
+  stopCamera();
+  if(kioskNetInterval){ clearInterval(kioskNetInterval); kioskNetInterval=null; }
+  if(state.view==='kiosk') renderKiosk();
+  else if(state.view==='panel') renderPanel();
+  else if(state.view==='personel') renderPersonel();
+  else if(state.view==='raporlar') renderRaporlar();
+  else if(state.view==='ayarlar') renderAyarlar();
+}
+
+/* ---------------- KIOSK ---------------- */
+let scanStream=null, scanRAF=null, lastScanCode=null, lastScanAt=0;
+
+function renderKiosk(){
+  const fs = kioskFullscreen;
+  const storageWarn = AppStorage.mode==='local' ? `<div class="shared-note">⚠ Bu cihaz için yerel depolama kullanılıyor — diğer terminal/cihazlarla senkronize değil. Gerçek yayında Ayarlar → Bağlantı'dan Firebase tanımlayın.</div>` : '';
+  root.innerHTML = `
+    <div id="kiosk-view" class="${fs?'fullscreen-mode':''}">
+      <div class="kiosk-wrap ${fs?'fs':''}">
+        ${!fs ? `
+          <div class="page-head">
+            <div class="eyebrow">Terminal</div>
+            <h2>Giriş–Çıkış Okutma Noktası</h2>
+            <p>QR kodunuzu kameraya gösterin veya aşağıdan adınızı bularak manuel giriş/çıkış yapın. QR kodlar 30 saniyede bir otomatik yenilenir; ekran görüntüsü ile tekrar kullanılamaz.</p>
+          </div>
+          ${storageWarn}` : `
+          <div class="eyebrow" style="color:var(--brass);margin-bottom:6px;">${state.settings.fakulteAdi}</div>
+          <h2 class="serif" style="font-size:26px;margin:0 0 14px 0;">Giriş–Çıkış Terminali</h2>
+        `}
+        <div class="net-status" id="net-status"></div>
+        <div class="scan-frame" id="scan-frame">
+          <video id="scan-video" autoplay playsinline muted></video>
+          <div class="corner tl"></div><div class="corner tr"></div>
+          <div class="corner bl"></div><div class="corner br"></div>
+          <div class="scan-line" id="scan-line" style="display:none;"></div>
+          <div id="cam-fallback" class="cam-off-msg" style="display:none;">Kamera bulunamadı veya izin verilmedi.<br>Aşağıdan manuel giriş yapabilirsiniz.</div>
+          <div id="stamp-overlay" style="position:absolute;inset:0;display:none;align-items:center;justify-content:center;background:rgba(255,255,255,0.94);flex-direction:column;"></div>
+        </div>
+        <div class="manual-search">
+          <label>Personel Ara (manuel)</label>
+          <input type="text" id="kiosk-search" placeholder="İsim yazın…" autocomplete="off">
+          <div id="kiosk-results" style="margin-top:10px;max-height:230px;overflow:auto;"></div>
+        </div>
+        ${fs ? `<button class="exit-fs" id="exit-fs">Yönetim Paneline Dön</button>` : ''}
+      </div>
+    </div>
+  `;
+  document.getElementById('kiosk-search').addEventListener('input', renderKioskResults);
+  renderKioskResults();
+  if(fs) document.getElementById('exit-fs').addEventListener('click', ()=>{ requireAdmin(()=>{ kioskFullscreen=false; render(); }); });
+  startCamera();
+  refreshNetStatus();
+  kioskNetInterval = setInterval(refreshNetStatus, 30000);
+}
+
+async function refreshNetStatus(){
+  const box = document.getElementById('net-status');
+  if(!box) return;
+  const s = state.settings;
+  if(!s.agDogrulamaZorunlu && !s.konumDogrulamaZorunlu){ box.innerHTML=''; return; }
+  box.innerHTML = `<span class="badge net-unk">Ağ/konum kontrol ediliyor…</span>`;
+  const res = await evaluateNetwork();
+  if(!document.getElementById('net-status')) return; // görünüm değişmiş olabilir
+  if(res.ok){
+    box.innerHTML = `<span class="badge net-ok">✓ Doğrulandı${res.ip? ' · '+res.ip:''}</span>`;
+  }else{
+    box.innerHTML = `<span class="badge net-bad">⚠ ${res.reason}</span>`;
+  }
+}
+
+function renderKioskResults(){
+  const q = (document.getElementById('kiosk-search').value || '').toLocaleLowerCase('tr');
+  const box = document.getElementById('kiosk-results');
+  if(!state.personnel.length){ box.innerHTML = `<div class="empty-note">Henüz personel eklenmemiş. Personel sekmesinden ekleyin.</div>`; return; }
+  if(q===''){ box.innerHTML=''; return; }
+  const list = state.personnel.filter(p=>p.name.toLocaleLowerCase('tr').includes(q));
+  if(!list.length){ box.innerHTML = `<div class="empty-note">Eşleşen personel yok.</div>`; return; }
+  box.innerHTML = list.slice(0,8).map(p=>{
+    const present = isPresent(p.id);
+    return `<div class="person-pick">
+      <div style="display:flex;align-items:center;gap:10px;">
+        <div class="avatar">${initials(p.name)}</div>
+        <div style="text-align:left;">
+          <div style="font-weight:600;font-size:13.5px;">${p.name}</div>
+          <div style="font-size:11px;opacity:.7;">${p.unvan||'Araş. Gör.'}</div>
+        </div>
+      </div>
+      <button class="btn sm ${present?'':'brass'}" data-pid="${p.id}">${present?'Çıkış Yap':'Giriş Yap'}</button>
+    </div>`;
+  }).join('');
+  box.querySelectorAll('button[data-pid]').forEach(b=>{
+    b.addEventListener('click', async ()=>{
+      const net = await canCheckIn();
+      if(!net.ok){ showRejection(net.reason); return; }
+      const rec = await addRecordForPerson(b.dataset.pid);
+      const p = personById(b.dataset.pid);
+      playStamp(rec, p);
+      document.getElementById('kiosk-search').value=''; renderKioskResults();
+    });
+  });
+}
+
+function playStamp(rec, person){
+  const overlay = document.getElementById('stamp-overlay'); if(!overlay) return;
+  const now = new Date(rec.ts);
+  let cls='stamp', label = rec.type==='giris' ? 'GİRİŞ' : 'ÇIKIŞ';
+  if(rec.type==='giris' && tsMinutesOfDay(rec.ts) > toleransEsigiGiris()) cls += ' late';
+  else if(rec.type==='cikis'){ cls += ' out'; if(tsMinutesOfDay(rec.ts) < toleransEsigiCikis()) cls += ' late'; }
+  overlay.style.display='flex';
+  overlay.innerHTML = `<div class="${cls}">${label}</div>
+    <div style="margin-top:12px;font-weight:600;font-size:14px;color:var(--ink);">${person?person.name:''}</div>
+    <div class="mono" style="font-size:12px;color:var(--ink-soft);margin-top:2px;">${timeStrSec(now)}</div>`;
+  setTimeout(()=>{ if(overlay) overlay.style.display='none'; }, 1600);
+}
+function showRejection(reason){
+  const overlay = document.getElementById('stamp-overlay'); if(!overlay) return;
+  overlay.style.display='flex';
+  overlay.innerHTML = `<div class="stamp reject">REDDEDİLDİ</div>
+    <div style="margin-top:12px;font-size:13px;color:var(--danger);max-width:260px;">${reason}</div>`;
+  setTimeout(()=>{ if(overlay) overlay.style.display='none'; }, 2200);
+}
+
+async function startCamera(){
+  const video = document.getElementById('scan-video');
+  const fallback = document.getElementById('cam-fallback');
+  const scanLine = document.getElementById('scan-line');
+  if(!video) return;
+  if(typeof jsQR === 'undefined'){ if(fallback) fallback.style.display='flex'; return; }
+  try{
+    scanStream = await navigator.mediaDevices.getUserMedia({ video:{ facingMode:'environment' } });
+    video.srcObject = scanStream; scanLine.style.display='block';
+    const canvas = document.createElement('canvas'); const ctx = canvas.getContext('2d',{willReadFrequently:true});
+    const tick = ()=>{
+      if(!video || video.readyState!==video.HAVE_ENOUGH_DATA){ scanRAF = requestAnimationFrame(tick); return; }
+      canvas.width = video.videoWidth; canvas.height = video.videoHeight;
+      ctx.drawImage(video,0,0,canvas.width,canvas.height);
+      const imgData = ctx.getImageData(0,0,canvas.width,canvas.height);
+      const code = jsQR(imgData.data, imgData.width, imgData.height);
+      if(code && code.data) handleScannedText(code.data);
+      scanRAF = requestAnimationFrame(tick);
+    };
+    scanRAF = requestAnimationFrame(tick);
+  }catch(e){ if(fallback) fallback.style.display='flex'; }
+}
+function stopCamera(){
+  if(scanRAF) cancelAnimationFrame(scanRAF); scanRAF=null;
+  if(scanStream){ scanStream.getTracks().forEach(t=>t.stop()); scanStream=null; }
+  lastScanCode=null; lastScanAt=0;
+}
+async function handleScannedText(text){
+  const now = Date.now();
+  if(text===lastScanCode && (now-lastScanAt)<4000) return;
+  const m = /^AGDEV2:([A-Za-z0-9]+):(\d{6})$/.exec(text.trim());
+  if(!m) return;
+  const kod = m[1], token = m[2];
+  const person = personByCode(kod);
+  if(!person) return;
+  lastScanCode = text; lastScanAt = now;
+  const net = await canCheckIn();
+  if(!net.ok){ showRejection('Ağ/konum doğrulaması başarısız: '+net.reason); return; }
+  const valid = await verifyToken(person, token);
+  if(!valid){ showRejection('QR kodun süresi doldu veya daha önce kullanıldı. Lütfen QR ekranını yenileyin.'); return; }
+  const rec = await addRecordForPerson(person.id);
+  playStamp(rec, person);
+}
+
+/* ---------------- PANEL ---------------- */
+function renderPanel(){
+  const todayStr = localDateStr(new Date());
+  const total = state.personnel.length;
+  const present = state.personnel.filter(p=>isPresent(p.id));
+  const gecGelenler = state.personnel.filter(p=>{
+    const recs = todayRecordsFor(p.id, todayStr).filter(r=>r.type==='giris');
+    return recs.length && tsMinutesOfDay(recs[0].ts) > toleransEsigiGiris();
+  });
+  const erkenCikanlar = state.personnel.filter(p=>{
+    const recs = todayRecordsFor(p.id, todayStr).filter(r=>r.type==='cikis');
+    if(!recs.length) return false;
+    return tsMinutesOfDay(recs[recs.length-1].ts) < toleransEsigiCikis();
+  });
+  const simdi = new Date(); const nowMin = simdi.getHours()*60+simdi.getMinutes();
+  const eksikGiris = nowMin>=toleransEsigiGiris() ? state.personnel.filter(p=>!todayRecordsFor(p.id,todayStr).some(r=>r.type==='giris')) : [];
+  const eksikCikis = nowMin>=mesaiBitisEsigi() ? state.personnel.filter(p=>isPresent(p.id)) : [];
+  const bugunHareketler = state.records.filter(r=>r.dateStr===todayStr).sort((a,b)=>b.ts.localeCompare(a.ts));
+  const storageWarn = AppStorage.mode==='local' ? `<div class="shared-note">⚠ Yerel depolama kullanılıyor — bu panel sadece bu tarayıcıdaki kayıtları gösterir. Terminal başka bir cihazda çalışıyorsa senkron olmaz.</div>` : '';
+
+  root.innerHTML = `
+    <div class="page-head">
+      <div class="eyebrow">Canlı Durum</div>
+      <h2>Yönetim Paneli</h2>
+      <p>Fakültede o an kimlerin bulunduğunu, geç gelen, erken ayrılan ve eksik kayıtları anlık olarak izleyin.</p>
+    </div>
+    ${storageWarn}
+    <div class="hero-stat" style="margin-bottom:20px;">
+      <div><div class="num">${present.length}<span style="font-size:22px;color:#8792A6;"> / ${total}</span></div>
+        <div class="label">Şu an fakültede bulunan personel</div></div>
+      <div class="sub-stats">
+        <div><div class="n">${gecGelenler.length}</div><div class="l">Geç gelen</div></div>
+        <div><div class="n">${erkenCikanlar.length}</div><div class="l">Erken çıkan</div></div>
+        <div><div class="n">${fmtDateTR(todayStr)}</div><div class="l">Bugün</div></div>
+      </div>
+    </div>
+    <div class="grid cols-2">
+      <div class="card"><div class="section-title">Şu An Fakültede</div><div class="section-desc">Giriş saatine göre sıralı, süre canlı hesaplanır.</div><div id="present-list"></div></div>
+      <div class="card"><div class="section-title">Bugünkü Hareketler</div><div class="section-desc">Tüm giriş/çıkış olayları — hatalı okutmaları silebilirsiniz.</div><div id="today-ledger" style="max-height:360px;overflow:auto;"></div></div>
+    </div>
+    <div class="grid cols-3" style="margin-top:18px;">
+      <div class="card"><div class="section-title">Geç Gelenler</div><div class="section-desc">Mesai başlangıcı + tolerans üzeri.</div><div id="late-list"></div></div>
+      <div class="card"><div class="section-title">Erken Ayrılanlar</div><div class="section-desc">Mesai bitişi − tolerans altı.</div><div id="early-list"></div></div>
+      <div class="card"><div class="section-title">Eksik Kayıtlar</div><div class="section-desc">Bildirim / hatırlatma listesi.</div><div id="missing-list"></div></div>
+    </div>
+  `;
+
+  const presentBox = document.getElementById('present-list');
+  presentBox.innerHTML = !present.length ? `<div class="empty-note">Şu anda fakültede kimse görünmüyor.</div>` :
+    present.map(p=>{ const last=lastRecordFor(p.id); const mins=minutesBetween(new Date(last.ts), new Date());
+      return `<div class="ledger-row"><span class="pulse-dot"></span>
+        <div class="avatar" style="width:28px;height:28px;font-size:11px;">${initials(p.name)}</div>
+        <div style="flex:1;"><div style="font-weight:600;">${p.name}</div><div style="font-size:11px;color:var(--ink-soft);">${p.unvan||'Araş. Gör.'}</div></div>
+        <div style="text-align:right;"><div class="mono" style="font-size:12.5px;">${timeStr(new Date(last.ts))}'te girdi</div>
+        <div style="font-size:11px;color:var(--ink-soft);">${durationStr(mins)} içeride</div></div></div>`; }).join('');
+
+  const ledgerBox = document.getElementById('today-ledger');
+  ledgerBox.innerHTML = !bugunHareketler.length ? `<div class="empty-note">Bugün henüz hareket yok.</div>` :
+    bugunHareketler.map(r=>{ const p=personById(r.personnelId);
+      return `<div class="ledger-row"><span class="badge ${r.type==='giris'?'in':'out'}">${r.type==='giris'?'GİRİŞ':'ÇIKIŞ'}</span>
+        <div style="flex:1;">${p?p.name:'(silinmiş personel)'}</div>
+        <div class="mono" style="font-size:12px;color:var(--ink-soft);">${timeStrSec(new Date(r.ts))}</div>
+        <button class="btn sm danger" data-del="${r.id}">Sil</button></div>`; }).join('');
+  ledgerBox.querySelectorAll('button[data-del]').forEach(b=>b.addEventListener('click', async ()=>{ await deleteRecord(b.dataset.del); showToast('Kayıt silindi.'); renderPanel(); }));
+
+  const lateBox = document.getElementById('late-list');
+  lateBox.innerHTML = !gecGelenler.length ? `<div class="empty-note">Bugün geç gelen yok.</div>` :
+    gecGelenler.map(p=>{ const rec = todayRecordsFor(p.id, todayStr).filter(r=>r.type==='giris')[0];
+      const gecikme = tsMinutesOfDay(rec.ts) - toleransEsigiGiris();
+      return `<div class="ledger-row"><div style="flex:1;">${p.name}</div><span class="badge late">+${gecikme} dk</span></div>`; }).join('');
+
+  const earlyBox = document.getElementById('early-list');
+  earlyBox.innerHTML = !erkenCikanlar.length ? `<div class="empty-note">Bugün erken ayrılan yok.</div>` :
+    erkenCikanlar.map(p=>{ const recs = todayRecordsFor(p.id, todayStr).filter(r=>r.type==='cikis'); const last=recs[recs.length-1];
+      const eksik = toleransEsigiCikis() - tsMinutesOfDay(last.ts);
+      return `<div class="ledger-row"><div style="flex:1;">${p.name}</div><span class="badge early">−${eksik} dk</span></div>`; }).join('');
+
+  const missingBox = document.getElementById('missing-list');
+  if(!eksikGiris.length && !eksikCikis.length){ missingBox.innerHTML = `<div class="empty-note">Eksik kayıt yok.</div>`; }
+  else{
+    missingBox.innerHTML =
+      eksikGiris.map(p=>`<div class="ledger-row"><div style="flex:1;">${p.name}</div><span class="badge early">Giriş yok</span></div>`).join('') +
+      eksikCikis.map(p=>`<div class="ledger-row"><div style="flex:1;">${p.name}</div><span class="badge late">Çıkış yapmadı</span></div>`).join('');
+  }
+}
+
+/* ---------------- PERSONEL ---------------- */
+function renderPersonel(){
+  root.innerHTML = `
+    <div class="page-head"><div class="eyebrow">Kayıt</div><h2>Personel Yönetimi</h2>
+      <p>Araştırma görevlisi ekleyin; her personele otomatik benzersiz kod ve dinamik QR üretilir.</p></div>
+    <div class="grid cols-2">
+      <div class="card"><div class="section-title">Personel Listesi (${state.personnel.length})</div>
+        <div class="section-desc">QR kodu görüntülemek için "QR" butonuna basın — QR 30 saniyede bir otomatik yenilenir.</div>
+        <div id="personnel-list"></div></div>
+      <div class="card" style="align-self:start;"><div class="section-title">Yeni Personel Ekle</div>
+        <div class="field"><label>Ad Soyad</label><input type="text" id="new-name" placeholder="Örn. Ayşe Yılmaz"></div>
+        <div class="field"><label>Unvan</label><select id="new-unvan"><option>Araş. Gör.</option><option>Araş. Gör. Dr.</option><option>Öğr. Gör.</option></select></div>
+        <button class="btn primary" id="add-person" style="width:100%;">Personel Ekle</button></div>
+    </div>
+  `;
+  const listBox = document.getElementById('personnel-list');
+  listBox.innerHTML = !state.personnel.length ? `<div class="empty-note">Henüz personel eklenmedi.</div>` :
+    state.personnel.map(p=>`<div class="ledger-row"><div class="avatar">${initials(p.name)}</div>
+      <div style="flex:1;"><div style="font-weight:600;">${p.name}</div>
+      <div style="font-size:11.5px;color:var(--ink-soft);">${p.unvan||'Araş. Gör.'} · <span class="mono">${p.kod}</span></div></div>
+      <button class="btn sm" data-qr="${p.id}">QR</button>
+      <button class="btn sm danger" data-del="${p.id}">Sil</button></div>`).join('');
+  listBox.querySelectorAll('button[data-qr]').forEach(b=>b.addEventListener('click', ()=>showQrModal(b.dataset.qr)));
+  listBox.querySelectorAll('button[data-del]').forEach(b=>b.addEventListener('click', async ()=>{
+    const p = personById(b.dataset.del);
+    if(confirm(`${p.name} silinsin mi? Geçmiş kayıtları etkilenmez.`)){
+      state.personnel = state.personnel.filter(x=>x.id!==p.id); await persistPersonnel(); showToast('Personel silindi.'); renderPersonel();
+    }
+  }));
+  document.getElementById('add-person').addEventListener('click', async ()=>{
+    const nameInput = document.getElementById('new-name'); const name = nameInput.value.trim();
+    if(!name){ nameInput.focus(); return; }
+    const unvan = document.getElementById('new-unvan').value;
+    const person = { id: uid(), name, unvan, kod: genCode(), secret: uid()+uid(), eklenme: new Date().toISOString() };
+    state.personnel.push(person); await persistPersonnel(); showToast(`${name} eklendi.`); renderPersonel();
+  });
+}
+
+let qrModalInterval = null, qrModalWindow = null;
+function showQrModal(personId){
+  const p = personById(personId); if(!p) return;
+  const overlay = document.createElement('div'); overlay.className='overlay';
+  overlay.innerHTML = `<div class="modal"><h3>${p.name}</h3>
+    <div class="code">${p.unvan||'Araş. Gör.'} · Kod: ${p.kod}</div>
+    <div id="qr-holder"></div>
+    <div class="qr-countdown" id="qr-countdown">Yenileniyor…</div>
+    <p style="font-size:11.5px;color:var(--ink-soft);margin:0 0 16px 0;">QR, ${QR_STEP} saniyede bir otomatik değişir; ekran görüntüsü alınıp paylaşılsa dahi süresi dolunca veya bir kez kullanılınca geçersiz olur.</p>
+    <button class="btn primary" id="close-modal" style="width:100%;">Kapat</button></div>`;
+  document.body.appendChild(overlay);
+  async function refreshQr(){
+    const token = await totpToken(p.secret, QR_STEP);
+    const payload = 'AGDEV2:'+p.kod+':'+token;
+    const holder = document.getElementById('qr-holder'); if(!holder) return;
+    holder.innerHTML = '';
+    let drew = false;
+    if(typeof QRCode!=='undefined'){
+      try{ new QRCode(holder, { text: payload, width:180, height:180, colorDark:'#16233D', colorLight:'#ffffff' }); drew = true; }
+      catch(e){ console.error('QR çizim hatası', e); }
+    }
+    if(!drew){ holder.innerHTML = `<div class="mono" style="font-size:22px;letter-spacing:.08em;">${token}</div><div style="font-size:10.5px;color:var(--ink-soft);margin-top:6px;">(QR görseli yüklenemedi — bu durumda terminalde adınızı arayarak manuel giriş/çıkış yapabilirsiniz)</div>`; }
+    qrModalWindow = Math.floor(Date.now()/1000/QR_STEP);
+  }
+  refreshQr();
+  qrModalInterval = setInterval(()=>{
+    const cd = document.getElementById('qr-countdown'); if(!cd){ clearInterval(qrModalInterval); return; }
+    const remaining = QR_STEP - (Math.floor(Date.now()/1000) % QR_STEP);
+    cd.textContent = 'Yeni kod: ' + remaining + ' sn';
+    const curWindow = Math.floor(Date.now()/1000/QR_STEP);
+    if(curWindow !== qrModalWindow) refreshQr();
+  }, 1000);
+  function closeModal(){ clearInterval(qrModalInterval); qrModalInterval=null; overlay.remove(); }
+  overlay.addEventListener('click', (e)=>{ if(e.target===overlay) closeModal(); });
+  document.getElementById('close-modal').addEventListener('click', closeModal);
+}
+
+/* ---------------- RAPORLAR ---------------- */
+function renderRaporlar(){
+  const today = new Date(); const defaultStart = new Date(today); defaultStart.setDate(today.getDate()-6);
+  root.innerHTML = `
+    <div class="page-head"><div class="eyebrow">Devam Kayıtları</div><h2>Raporlar</h2>
+      <p>Günlük, haftalık veya aylık devam raporlarını görüntüleyin ve CSV olarak dışa aktarın.</p></div>
+    <div class="card">
+      <div class="toolbar">
+        <div class="grow"><label>Personel</label><select id="rep-person"><option value="all">Tüm Personel</option>
+          ${state.personnel.map(p=>`<option value="${p.id}">${p.name}</option>`).join('')}</select></div>
+        <div><label>Başlangıç</label><input type="text" id="rep-start" value="${localDateStr(defaultStart)}" placeholder="YYYY-AA-GG"></div>
+        <div><label>Bitiş</label><input type="text" id="rep-end" value="${localDateStr(today)}" placeholder="YYYY-AA-GG"></div>
+        <div style="align-self:flex-end;"><button class="btn primary" id="rep-run">Raporu Getir</button></div>
+        <div style="align-self:flex-end;"><button class="btn" id="rep-csv">CSV İndir</button></div>
+      </div>
+      <div id="rep-table"></div>
+    </div>`;
+  document.getElementById('rep-run').addEventListener('click', runReport);
+  document.getElementById('rep-csv').addEventListener('click', exportCsv);
+  runReport();
+}
+function buildReportRows(){
+  const personId = document.getElementById('rep-person').value;
+  const start = document.getElementById('rep-start').value; const end = document.getElementById('rep-end').value;
+  const people = personId==='all' ? state.personnel : state.personnel.filter(p=>p.id===personId);
+  const rows = [];
+  people.forEach(p=>{
+    const dates = [...new Set(state.records.filter(r=>r.personnelId===p.id && r.dateStr>=start && r.dateStr<=end).map(r=>r.dateStr))].sort();
+    dates.forEach(dateStr=>{
+      const recs = todayRecordsFor(p.id, dateStr);
+      const girisler = recs.filter(r=>r.type==='giris'); const cikislar = recs.filter(r=>r.type==='cikis');
+      const ilkGiris = girisler[0]; const sonCikis = cikislar[cikislar.length-1];
+      let toplamDk=0, openGiris=null;
+      recs.forEach(r=>{ if(r.type==='giris'){ openGiris=new Date(r.ts); } else if(r.type==='cikis' && openGiris){ toplamDk += minutesBetween(openGiris, new Date(r.ts)); openGiris=null; } });
+      if(openGiris && dateStr===localDateStr(new Date())) toplamDk += minutesBetween(openGiris, new Date());
+      let durum='Zamanında';
+      if(ilkGiris && tsMinutesOfDay(ilkGiris.ts) > toleransEsigiGiris()) durum='Geç Geldi';
+      if(sonCikis && tsMinutesOfDay(sonCikis.ts) < toleransEsigiCikis()) durum = durum==='Geç Geldi' ? 'Geç Geldi / Erken Çıktı' : 'Erken Çıktı';
+      if(openGiris) durum='Hâlâ İçeride';
+      rows.push({ person:p.name, dateStr, giris: ilkGiris?timeStr(new Date(ilkGiris.ts)):'—', cikis: sonCikis?timeStr(new Date(sonCikis.ts)):'—', toplam: durationStr(toplamDk), durum });
+    });
+  });
+  rows.sort((a,b)=> b.dateStr.localeCompare(a.dateStr) || a.person.localeCompare(b.person,'tr'));
+  return rows;
+}
+function runReport(){
+  const rows = buildReportRows(); const box = document.getElementById('rep-table');
+  if(!rows.length){ box.innerHTML = `<div class="empty-note">Seçilen aralıkta kayıt bulunamadı.</div>`; return; }
+  box.innerHTML = `<table><thead><tr><th>Tarih</th><th>Personel</th><th>Giriş</th><th>Çıkış</th><th>Toplam Süre</th><th>Durum</th></tr></thead>
+    <tbody>${rows.map(r=>`<tr><td class="mono">${fmtDateTR(r.dateStr)}</td><td>${r.person}</td><td class="mono">${r.giris}</td>
+      <td class="mono">${r.cikis}</td><td class="mono">${r.toplam}</td>
+      <td><span class="badge ${r.durum==='Zamanında'?'ontime':(r.durum==='Hâlâ İçeride'?'in':(r.durum.includes('Geç')||r.durum.includes('Erken')?'late':'out'))}">${r.durum}</span></td></tr>`).join('')}</tbody></table>`;
+}
+function exportCsv(){
+  const rows = buildReportRows(); if(!rows.length){ showToast('Dışa aktarılacak veri yok.'); return; }
+  const header = ['Tarih','Personel','Giriş','Çıkış','Toplam Süre','Durum'];
+  const csvRows = [header.join(';')];
+  rows.forEach(r=>csvRows.push([fmtDateTR(r.dateStr), r.person, r.giris, r.cikis, r.toplam, r.durum].join(';')));
+  const blob = new Blob(['\uFEFF'+csvRows.join('\n')], { type:'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob); const a = document.createElement('a');
+  a.href=url; a.download='devam-raporu.csv'; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
+}
+
+/* ---------------- AYARLAR ---------------- */
+function renderAyarlar(){
+  const s = state.settings;
+  const fbCfgRaw = (()=>{ try{ return JSON.parse(safeLocal.get('agdev-fb-config')||'null'); }catch(e){ return null; } })();
+  root.innerHTML = `
+    <div class="page-head"><div class="eyebrow">Yapılandırma</div><h2>Ayarlar</h2>
+      <p>Mesai saatlerini, doğrulama kurallarını ve dağıtım/veritabanı bağlantısını yönetin.</p></div>
+    <div class="shared-note">Bu ayarlar mevcut depolama moduna göre paylaşılır (bkz. kenar çubuğundaki depolama göstergesi).</div>
+
+    <div class="card" style="max-width:620px;margin-bottom:18px;">
+      <div class="section-title">Mesai ve Tolerans</div>
+      <div class="field"><label>Fakülte / Bölüm Adı</label><input type="text" id="s-fakulte" value="${s.fakulteAdi}"></div>
+      <div class="field-row">
+        <div class="field"><label>Mesai Başlangıcı</label><input type="time" id="s-baslangic" value="${s.mesaiBaslangic}"></div>
+        <div class="field"><label>Giriş Toleransı (dk)</label><input type="number" id="s-tol-giris" value="${s.toleransGiris}" min="0" max="120"></div>
+      </div>
+      <div class="field-row">
+        <div class="field"><label>Mesai Bitişi</label><input type="time" id="s-bitis" value="${s.mesaiBitis}"></div>
+        <div class="field"><label>Çıkış Toleransı (dk)</label><input type="number" id="s-tol-cikis" value="${s.toleransCikis}" min="0" max="120"></div>
+      </div>
+    </div>
+
+    <div class="card" style="max-width:620px;margin-bottom:18px;">
+      <div class="section-title">Ağ ve Konum Doğrulama</div>
+      <div class="section-desc">İstemci tarafında çalışan yaklaşık bir doğrulamadır (genel IP adresi / GPS). Sahte konum veya VPN ile atlatılabilir; kesin zorunluluk için fakülte sunucusunda sunucu taraflı doğrulama gerekir.</div>
+      <div class="toggle-row"><div><div class="tt">IP Doğrulamasını Zorunlu Kıl</div><div class="td">Terminalin genel IP'si, izinli önekle eşleşmezse giriş/çıkış reddedilir.</div></div>
+        <label class="switch"><input type="checkbox" id="s-ag-zorunlu" ${s.agDogrulamaZorunlu?'checked':''}><span class="slider"></span></label></div>
+      <div class="field" style="margin-top:10px;"><label>İzinli IP Önekleri (virgülle ayırın)</label><textarea id="s-ip-onek" placeholder="Örn. 193.140., 78.183.55.">${s.izinliIpOnekleri||''}</textarea></div>
+      <div class="toggle-row"><div><div class="tt">Konum (GPS) Doğrulamasını Zorunlu Kıl</div><div class="td">Tarayıcı konumu fakülte koordinatına yakın değilse reddedilir.</div></div>
+        <label class="switch"><input type="checkbox" id="s-konum-zorunlu" ${s.konumDogrulamaZorunlu?'checked':''}><span class="slider"></span></label></div>
+      <div class="field-row" style="margin-top:10px;">
+        <div class="field"><label>Fakülte Enlem (lat)</label><input type="text" id="s-lat" value="${s.fakulteLat||''}" placeholder="Örn. 39.9255"></div>
+        <div class="field"><label>Fakülte Boylam (lng)</label><input type="text" id="s-lng" value="${s.fakulteLng||''}" placeholder="Örn. 32.8663"></div>
+      </div>
+      <div class="field"><label>Tolerans (metre)</label><input type="number" id="s-konum-tol" value="${s.konumToleransMetre||200}" min="10"></div>
+      <p class="hint">Not: Tarayıcılar gizlilik nedeniyle Wi-Fi ağı adını (SSID) doğrudan paylaşmaz; bu yüzden "kampüs ağında olma" şartı burada genel IP adresi üzerinden yaklaşık olarak kontrol edilir.</p>
+    </div>
+
+    <div class="card" style="max-width:620px;margin-bottom:18px;">
+      <div class="section-title">Bildirimler</div>
+      <div class="section-desc">Uygulama sekmesi açıkken çalışan tarayıcı bildirimleridir; sekme/tarayıcı kapalıyken gerçek anlamda "push" bildirim gönderilemez (bunun için sunucu taraflı Web Push altyapısı gerekir — bkz. aşağıdaki dağıtım notu).</div>
+      <div class="toggle-row"><div><div class="tt">Tarayıcı Bildirimleri</div><div class="td">Geç gelen / eksik çıkış olduğunda tek seferlik hatırlatma gönderir.</div></div>
+        <label class="switch"><input type="checkbox" id="s-bildirim" ${s.bildirimlerAktif?'checked':''}><span class="slider"></span></label></div>
+      <button class="btn" id="req-notif-perm" style="margin-top:10px;">Bildirim İznini İste</button>
+    </div>
+
+    <div class="card" style="max-width:620px;margin-bottom:18px;">
+      <div class="section-title">Yönetici Şifresi</div>
+      <div class="section-desc">Personel ve Ayarlar sekmelerine erişimi PIN ile sınırlar. Bu temel bir önlemdir, gerçek kullanıcı kimlik doğrulaması değildir.</div>
+      <div class="field" style="max-width:200px;"><label>Yönetici PIN</label><input type="text" id="s-pin" value="${s.adminPin||'1234'}"></div>
+    </div>
+
+    <div class="card" style="max-width:620px;margin-bottom:18px;">
+      <div class="section-title">Veritabanı Bağlantısı (Firebase — çoklu cihaz senkronu)</div>
+      <div class="section-desc">GitHub Pages veya OSTIM LMS gibi statik ortamlarda terminal, yönetim paneli ve personel telefonlarının AYNI veriyi görmesi için ücretsiz bir Firebase Realtime Database projesi bağlayın. Boş bırakılırsa uygulama bu tarayıcıya özel yerel depolamayı kullanır.</div>
+      <div class="field"><label>API Key</label><input type="text" id="fb-apikey" value="${fbCfgRaw?fbCfgRaw.apiKey||'':''}"></div>
+      <div class="field"><label>Database URL</label><input type="text" id="fb-dburl" value="${fbCfgRaw?fbCfgRaw.databaseURL||'':''}" placeholder="https://proje-default-rtdb.firebaseio.com"></div>
+      <div class="field"><label>Project ID</label><input type="text" id="fb-projectid" value="${fbCfgRaw?fbCfgRaw.projectId||'':''}"></div>
+      <button class="btn" id="save-fb">Bağlantıyı Kaydet ve Sayfayı Yenile</button>
+      <p class="hint">Kod dosyasının en üstündeki <span class="mono">FIREBASE_CONFIG</span> sabitine bilgileri hardcode ederseniz, siteyi ziyaret eden herkes (her cihaz kendi ayarını girmeden) otomatik olarak paylaşımlı veritabanını kullanır — GitHub'a yüklerken önerilen yöntem budur.</p>
+    </div>
+
+    <button class="btn primary" id="save-settings" style="width:100%;max-width:620px;">Tüm Ayarları Kaydet</button>
+  `;
+
+  document.getElementById('req-notif-perm').addEventListener('click', async ()=>{
+    if(typeof Notification==='undefined'){ showToast('Bu tarayıcı bildirim desteklemiyor.'); return; }
+    const perm = await Notification.requestPermission();
+    showToast(perm==='granted' ? 'Bildirim izni verildi.' : 'Bildirim izni verilmedi.');
+  });
+  document.getElementById('save-fb').addEventListener('click', ()=>{
+    const cfg = { apiKey: document.getElementById('fb-apikey').value.trim(), databaseURL: document.getElementById('fb-dburl').value.trim(), projectId: document.getElementById('fb-projectid').value.trim() };
+    if(!cfg.apiKey || !cfg.databaseURL){ showToast('API Key ve Database URL gerekli.'); return; }
+    safeLocal.set('agdev-fb-config', JSON.stringify(cfg));
+    showToast('Kaydedildi, sayfa yenileniyor…');
+    setTimeout(()=>location.reload(), 900);
+  });
+  document.getElementById('save-settings').addEventListener('click', async ()=>{
+    state.settings = {
+      fakulteAdi: document.getElementById('s-fakulte').value.trim() || 'Mühendislik Fakültesi',
+      mesaiBaslangic: document.getElementById('s-baslangic').value || '08:30',
+      toleransGiris: Number(document.getElementById('s-tol-giris').value) || 0,
+      mesaiBitis: document.getElementById('s-bitis').value || '17:30',
+      toleransCikis: Number(document.getElementById('s-tol-cikis').value) || 0,
+      adminPin: document.getElementById('s-pin').value.trim() || '1234',
+      agDogrulamaZorunlu: document.getElementById('s-ag-zorunlu').checked,
+      izinliIpOnekleri: document.getElementById('s-ip-onek').value.trim(),
+      konumDogrulamaZorunlu: document.getElementById('s-konum-zorunlu').checked,
+      fakulteLat: document.getElementById('s-lat').value.trim(),
+      fakulteLng: document.getElementById('s-lng').value.trim(),
+      konumToleransMetre: Number(document.getElementById('s-konum-tol').value) || 200,
+      bildirimlerAktif: document.getElementById('s-bildirim').checked
+    };
+    await persistSettings();
+    showToast('Ayarlar kaydedildi.');
+  });
+}
+
+/* ---------------------------------------------------------------
+   SAAT + PERİYODİK YENİLEME
+--------------------------------------------------------------- */
+function tickClock(){ const now = new Date(); document.getElementById('clock').textContent = timeStrSec(now); document.getElementById('clock-date').textContent = fmtDateTR(localDateStr(now)); }
+setInterval(tickClock, 1000); tickClock();
+
+setInterval(async ()=>{
+  if(!state.ready) return;
+  const prevView = state.view;
+  await loadAll();
+  if(prevView==='panel' || prevView==='kiosk') render();
+}, 5000);
+
+/* ---------------------------------------------------------------
+   BAŞLANGIÇ
+--------------------------------------------------------------- */
+(async function init(){
+  await AppStorage.init();
+  updateStorePill();
+  await loadAll();
+  document.querySelector('.navbtn[data-view="kiosk"]').classList.add('active');
+  render();
+})();
+</script>
+</body>
+</html>
